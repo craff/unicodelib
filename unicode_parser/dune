@@ -3,4 +3,4 @@
   (public_name pa_UnicodeData)
   (modules :standard)
   (preprocess (pps pacomb.ppx))
-  (libraries unix bz2 pacomb))
+  (libraries unix sqlite3 pacomb))

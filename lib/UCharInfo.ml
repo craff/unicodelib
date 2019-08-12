@@ -1,7 +1,24 @@
 open UTFTypes
 
+let unicodelib_db =
+  try Sys.getenv "UNICODELIB_DB"
+  with Not_found -> UnicodeConfig.unicodelib_db
+
+let get_char_descr_from_file : Uchar.t -> char_description = fun u ->
+  let m = PermanentMap.open_map unicodelib_db in
+  let d = PermanentMap.get m (Uchar.to_int u) in
+  PermanentMap.close_map m; d
+
+let cache : (Uchar.t, char_description) Hashtbl.t = Hashtbl.create 2048
 let get_char_descr : Uchar.t -> char_description = fun u ->
-  Hashtbl.find UnicodeData.data u
+  try
+    Hashtbl.find cache u
+  with Not_found ->
+    begin
+      let d = get_char_descr_from_file u in
+      Hashtbl.add cache u d; d
+    end
+
 
 let general_category : Uchar.t -> general_category = fun u ->
   let d = get_char_descr u in

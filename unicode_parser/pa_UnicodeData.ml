@@ -225,21 +225,15 @@ let blank = Lex.blank_regexp "[ \t\r]*"
 let parse = parse_channel file_contents blank
 
 let flatten_data ld =
-  let data = Hashtbl.create 1024 in
-  let rec add_data ld =
+  let rec add_data acc ld =
     match ld with
-    | []                   -> ()
-    | Single (k,v) :: ls   -> Hashtbl.add data k v; add_data ls
+    | []                   -> List.rev acc
+    | Single (k,v) :: ls   -> add_data ((Uchar.to_int k,v)::acc) ls
     | Range (f,l,bf) :: ls ->
-        if f > l then add_data ls
-        else
-          begin
-            Hashtbl.add data f (bf f);
-            add_data (Range (Uchar.succ f, l, bf) :: ls)
-          end
+        if f > l then add_data acc ls
+        else add_data ((Uchar.to_int f, bf f)::acc) (Range (Uchar.succ f, l, bf) :: ls)
   in
-  add_data ld;
-  data
+  add_data [] ld
 
 let _ =
   (* Command line args *)
@@ -255,15 +249,15 @@ let _ =
   (* Parsing and preparing the data *)
   let infile = open_in infile in
   let ld = Pos.handle_exception parse infile in
-  let data = flatten_data ld in
-  let data = Marshal.to_string data [] in
-  let data = Bz2.compress data 0 (String.length data) in
+  close_in infile;
 
-  let outfile = open_out outfile in
-  Printf.fprintf outfile "open UTFTypes\n";
-  Printf.fprintf outfile "let data = %S\n" data;
-  Printf.fprintf outfile "let data = Bz2.uncompress data 0 (String.length data)\n";
-  Printf.fprintf outfile "let data : (Uchar.t, char_description) Hashtbl.t\n\
-                            = Marshal.from_string data 0\n";
-  close_out outfile;
-  close_in infile
+  let data = flatten_data ld in
+
+  (* Adding the data to the permanent map *)
+  PermanentMap.new_map outfile; (* Fails if file exists *)
+  let m = PermanentMap.open_map outfile in
+  PermanentMap.add_many m data;
+
+  (* Compacting *)
+  PermanentMap.compact m;
+  PermanentMap.close_map m

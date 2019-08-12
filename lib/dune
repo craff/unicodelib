@@ -2,13 +2,23 @@
   (name unicodelib)
   (public_name unicodelib)
   (modules :standard)
-  (libraries bz2))
+  (libraries sqlite3))
+
+(install
+  (section share)
+  (files ./unicodelib.db))
 
 (rule
-  (targets ./UnicodeData.ml)
+  (targets ./UnicodeConfig.ml)
+  (deps ./unicodelib.db)
+  (action
+	(bash "echo \"let unicodelib_db = \\\"`opam config var share`/unicodelib/UnicodeData.db\\\"\" > ./UnicodeConfig.ml")))
+
+(rule
+  (targets ./unicodelib.db)
   (deps ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt)
   (action
-	(run ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt UnicodeData.ml)))
+	(run ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt unicodelib.db)))
 
 (rule
   (targets ./Latin1.ml)
