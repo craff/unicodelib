@@ -1,0 +1,6 @@
+(executable
+  (name pa_UnicodeData)
+  (public_name pa_UnicodeData)
+  (modules :standard)
+  (preprocess (pps pacomb.ppx))
+  (libraries unix bz2 pacomb))

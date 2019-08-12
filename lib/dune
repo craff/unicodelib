@@ -1,0 +1,23 @@
+(library
+  (name unicodelib)
+  (public_name unicodelib)
+  (modules :standard)
+  (libraries bz2))
+
+(rule
+  (targets ./UnicodeData.ml)
+  (deps ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt)
+  (action
+	(run ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt UnicodeData.ml)))
+
+(rule
+  (targets ./Latin1.ml)
+  (deps ../convert_parser/pa_convert.exe ../encoding_data/LATIN1.TXT)
+  (action
+	(run ../convert_parser/pa_convert.exe ../encoding_data/LATIN1.TXT Latin1.ml)))
+
+(rule
+  (targets ./Roman.ml)
+  (deps ../convert_parser/pa_convert.exe ../encoding_data/ROMAN.TXT)
+  (action
+	(run ../convert_parser/pa_convert.exe ../encoding_data/ROMAN.TXT Roman.ml)))

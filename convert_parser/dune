@@ -1,0 +1,7 @@
+
+(executable
+  (name pa_convert)
+  (public_name pa_convert)
+  (modules :standard)
+  (preprocess (pps pacomb.ppx))
+  (libraries unix pacomb))
