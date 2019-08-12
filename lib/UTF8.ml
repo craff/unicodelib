@@ -1,6 +1,6 @@
 
 
-include UTF.Make(
+module UTF8String = UTF.Make(
   struct
     (*
      * Encode a unicode character into a UTF8 string.
@@ -75,3 +75,7 @@ include UTF.Make(
       else
         raise (invalid_arg "UTF8.decode")
   end)
+
+include UTF8String
+
+include UTFNormalisation.Make(UTF8String)(UTF8String)

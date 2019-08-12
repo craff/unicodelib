@@ -1,4 +1,4 @@
-include UTF.Make(
+module UTF16String = UTF.Make(
   struct
     (*
      * Encode a unicode character into a UTF16 string.
@@ -59,3 +59,7 @@ include UTF.Make(
             let u = u + 0x10000 in
             (Uchar.of_int u, 4)
   end)
+
+include UTF16String
+
+include UTFNormalisation.Make(UTF16String)(UTF16String)

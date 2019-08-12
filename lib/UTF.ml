@@ -24,6 +24,20 @@ module type EncDec =
     val decode : string -> int -> (Uchar.t * int)
   end
 
+module type UTFString = sig
+  val encode : Uchar.t -> string
+  val decode : string -> int -> (Uchar.t * int)
+  val validate : string -> bool
+  val fold : ('a -> Uchar.t -> 'a) -> 'a -> string -> 'a
+  val nth_index : string -> int -> int
+  val nth : string -> int -> (Uchar.t * int)
+  val next : string -> int -> int
+  val prev : string -> int -> int
+  val trim : string -> string
+  val init : int -> (int -> Uchar.t) -> string
+  val empty_string : string
+end
+
 module Make = functor ( ED : EncDec ) ->
   struct
     include ED

@@ -60,7 +60,7 @@ type bidirectional_mapping =
   | WS  (* Whitespace *)
   | ON  (* Other Neutral *)
 
-type decomposition_atom =
+type decomposition_tag =
   | Font        (* A font variant (e.g. a blackletter form). *)
   | NoBreak     (* A no-break version of a space or hyphen. *)
   | Initial     (* An initial presentation form (Arabic). *)
@@ -78,7 +78,6 @@ type decomposition_atom =
   | Fraction    (* A vulgar fraction form. *)
   | Compat      (* Otherwise unspecified compatibility character. *)
   | Canonical
-  | Char of Uchar.t
 
 type char_description =
   { code                  : Uchar.t
@@ -86,7 +85,7 @@ type char_description =
   ; general_category      : general_category
   ; combining_class       : combining_class
   ; bidirectional_mapping : bidirectional_mapping
-  ; decomposition         : decomposition_atom list
+  ; decomposition         : decomposition_tag * Uchar.t list
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option

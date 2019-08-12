@@ -68,7 +68,7 @@ let bidirectional_mapping_of_string = function
   | "ON"  -> ON
   | s -> Lex.give_up ~msg:(Printf.sprintf "Missing: %s\n%!" s) ()
 
-let decomposition_atom_of_string = function
+let decomposition_tag_of_string = function
   | "font"     -> Font
   | "noBreak"  -> NoBreak
   | "initial"  -> Initial
@@ -115,9 +115,8 @@ let%parser mirrored =
 
 let%parser decomposition =
   let decomposition_tag =
-      '<' (t::RE"[a-zA-Z]+") '>' => decomposition_atom_of_string t
-    ; (c::code)                  => Char c
-  in (l::star decomposition_tag) => l
+      '<' (t::RE"[a-zA-Z]+") '>' => decomposition_tag_of_string t
+  in (t::default_option Canonical decomposition_tag) (cs::star code) => (t,cs)
 
 let%parser name =
     (n::RE"[-()A-Za-z0-9]+") => n
