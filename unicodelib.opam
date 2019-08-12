@@ -1,18 +1,29 @@
 synopsis: "light and reliable unicode library"
+description:
+"""
+Supports, UTF8, UTF16 and UTF32, convertion with Latin1 and Roman.
+Provides various function to access string (fold, next_char, ...).
+
+Currently parses all informations in UnicodeData.txt 12.1.0 and
+extra information for decomposition of Han syllabes from NormalizationTest.txt.
+"""
 
 opam-version: "2.0"
+bug-reports: "https://github.com/craff/unicodelib/issues"
+homepage: "https://github.com/craff/unicodlib"
+dev-repo: "git+https://github.com/craff/unicodelib.git"
+
 maintainer: "Christophe Raffalli <christophe@raffalli.eu>"
 authors: [
   "Christophe Raffalli <christophe@raffalli.eu>"
-  "Pierre-Étienne Meunier"
-  "Rodolphe Lepigre"]
+  "Rodolphe Lepigre <lepigre@mpi-sws.org>" ]
 license: "MIT"
 
 depends: [
   "ocaml" { >= "4.04.0" }
   "dune"  { build & >= "1.2.0" }
   "pacomb" { build }
-  "bz2" { }
+  "sqlite3" { }
 ]
 
 build: [ [ "dune" "build" "-p" name "-j" jobs ] ]
