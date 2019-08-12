@@ -1,0 +1,6 @@
+(test
+   (name Normalization)
+   (modules Normalization)
+   (preprocess (pps pacomb.ppx))
+   (libraries unix sqlite3 pacomb unicodelib)
+   (action (run ./Normalization.exe ../../../data/NormalizationTest.txt)))

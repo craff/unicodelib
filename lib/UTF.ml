@@ -36,6 +36,8 @@ module type UTFString = sig
   val trim : string -> string
   val init : int -> (int -> Uchar.t) -> string
   val empty_string : string
+  val of_list : Uchar.t list -> string
+  val to_list : string -> Uchar.t list
 end
 
 module Make = functor ( ED : EncDec ) ->
@@ -258,6 +260,14 @@ module Make = functor ( ED : EncDec ) ->
         Buf.add_char b (f i)
       done;
       Buf.contents b
+
+    let of_list : Uchar.t list -> string = fun l ->
+      let b = Buf.create 1024 in
+      List.iter (fun c -> Buf.add_char b c) l;
+      Buf.contents b
+
+    let to_list : string -> Uchar.t list = fun s ->
+      List.rev (fold (fun acc x -> x::acc) [] s)
 
     (*
      * Empty encoded string.

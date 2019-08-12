@@ -85,7 +85,7 @@ type char_description =
   ; general_category      : general_category
   ; combining_class       : combining_class
   ; bidirectional_mapping : bidirectional_mapping
-  ; decomposition         : decomposition_tag * Uchar.t list
+  ; decomposition         : (decomposition_tag * Uchar.t list) option
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option
@@ -96,3 +96,30 @@ type char_description =
   ; lowercase             : Uchar.t option
   ; titlecase             : Uchar.t option
   }
+
+let combining_class_to_int = function
+  | Fixed_position n -> n
+  | Spacing_split_enclosing_reordrant_and_Tibetan_subjoined -> 0
+  | Overlays_and_interior   -> 1
+  | Nuktas   -> 7
+  | Hiragana_Katakana_voicing_marks   -> 8
+  | Viramas   -> 9
+  | Below_left_attached -> 200
+  | Below_attached -> 202
+  | Below_right_attached -> 204
+  | Left_attached -> 208
+  | Right_attached -> 210
+  | Above_left_attached -> 212
+  | Above_attached -> 214
+  | Above_right_attached -> 216
+  | Below_left -> 218
+  | Below -> 220
+  | Below_right -> 222
+  | Left -> 224
+  | Right -> 226
+  | Above_left -> 228
+  | Above -> 230
+  | Above_right -> 232
+  | Double_below -> 233
+  | Double_above -> 234
+  | Below_iota_subscript -> 240

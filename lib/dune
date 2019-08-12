@@ -12,13 +12,15 @@
   (targets ./UnicodeConfig.ml)
   (deps ./unicodelib.db)
   (action
-	(bash "echo \"let unicodelib_db = \\\"`opam config var share`/unicodelib/UnicodeData.db\\\"\" > ./UnicodeConfig.ml")))
+	(bash "echo \"let unicodelib_db = \\\"`opam config var share`/unicodelib/unicodelib.db\\\"\" > ./UnicodeConfig.ml")))
 
 (rule
   (targets ./unicodelib.db)
-  (deps ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt)
+  (deps ../unicode_parser/pa_UnicodeData.exe
+        ../data/UnicodeData.txt
+	../data/NormalizationTest.txt)
   (action
-	(run ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt unicodelib.db)))
+	(run ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt ../data/NormalizationTest.txt unicodelib.db)))
 
 (rule
   (targets ./Latin1.ml)

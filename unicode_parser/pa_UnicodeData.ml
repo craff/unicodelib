@@ -116,7 +116,8 @@ let%parser mirrored =
 let%parser decomposition =
   let decomposition_tag =
       '<' (t::RE"[a-zA-Z]+") '>' => decomposition_tag_of_string t
-  in (t::default_option Canonical decomposition_tag) (cs::star code) => (t,cs)
+  in (t::default_option Canonical decomposition_tag) (cs::star code) =>
+       if cs <> [] then Some(t,cs) else None
 
 let%parser name =
     (n::RE"[-()A-Za-z0-9]+") => n
@@ -165,6 +166,31 @@ let%parser single =
         }
       in Single (code, desc)
 
+let decomposition_tbl = Hashtbl.create 1024
+
+module NTest = struct
+  (* Blank function *)
+  let blank = Lex.blank_regexp "\\(\\([#@][^\n]*\\)\\|[ \r\t\026]+\\)*"
+  (* bug: "\\([ \r\t\026]\\|\\(\\(#[^\n]*\\)\\)*" *)
+
+  let%parser string = (l::plus code) => l
+
+  (* Single mapping parser *)
+
+  let%parser decomposition =
+    (x::code) ';' (__::string) ';' (nfd::string)
+      ';' (__::string) ';' (nfkd::string) ';' (plus ('\n' => ())) =>
+      if nfd = nfkd then Hashtbl.add decomposition_tbl x nfd
+  ; code (__::string) ';' (__::string) ';' (__::string)
+      ';' (__::string) ';' (__::string) ';' (plus ('\n' => ())) =>
+      ()
+
+  let%parser decompositions =
+    (star ('\n' => ())) (star decomposition) => ()
+
+  let parse = parse_channel decompositions blank
+end
+
 let%parser range =
     (firstcode::code) ';'
     '<' (gname::plus name) ',' "First" '>' ';'
@@ -198,12 +224,17 @@ let%parser range =
     (option code) '\n' =>
       let build_desc c =
         if c < firstcode || c > lastcode then assert false;
+        let get_dec dec = if dec = None then
+                            try Some(Canonical,Hashtbl.find decomposition_tbl c)
+                            with Not_found -> None
+                          else dec
+        in
         { code                  = c
         ; name                  = gname
         ; general_category      = gen_cat
         ; combining_class       = c_cl
         ; bidirectional_mapping = bid_map
-        ; decomposition         = dec
+        ; decomposition         = get_dec dec
         ; decimal_digit_value   = decimal
         ; digit_value           = digit
         ; numeric_value         = numeric
@@ -236,19 +267,24 @@ let flatten_data ld =
 
 let _ =
   (* Command line args *)
-  if Array.length Sys.argv != 3 then
+  if Array.length Sys.argv != 4 then
     begin
       let pn = Sys.argv.(0) in
-      Printf.eprintf "Usage: %s <path_to_UnicodeData.txt> <output_file>" pn;
+      Printf.eprintf "Usage: %s <path_to_UnicodeData.txt> <path_to_NormalizationTest.txt> <output_file>" pn;
       exit 1
     end;
   let infile = Sys.argv.(1) in
-  let outfile = Sys.argv.(2) in
+  let infile2 = Sys.argv.(2) in
+  let outfile = Sys.argv.(3) in
 
   (* Parsing and preparing the data *)
   let infile = open_in infile in
   let ld = Pos.handle_exception parse infile in
   close_in infile;
+
+  let infile2 = open_in infile2 in
+  let _ = Pos.handle_exception NTest.parse infile2 in
+  close_in infile2;
 
   let data = flatten_data ld in
 
