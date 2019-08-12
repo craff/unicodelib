@@ -305,7 +305,6 @@ let prefix_tree = Node (Hashtbl.create 1024) [@@unboxed]
 let add_to_prefix_tree c =
   match c.decomposition with
   | Some(Canonical,l) when not c.composition_exclusion  ->
-     Printf.printf "%04x " (Uchar.to_int c.code);
      let rec fn k tbl0 (r,Node tbl) = function
        | [] ->
          begin
