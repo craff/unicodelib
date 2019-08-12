@@ -18,13 +18,11 @@ module Make(In:UTFString)(Out:UTFString) = struct
       match i.decomposition with
       | None -> insert c acc
       | Some(t,l) ->
-         if List.mem t allowed_tags then List.fold_left fn acc l else insert c acc
+         if allowed_tags t then List.fold_left fn acc l else insert c acc
     in
     Out.of_list (List.rev (In.fold fn [] str))
 
-  let nfd = decompose [Canonical]
+  let nfd = decompose (fun t -> t = Canonical)
 
-  let nfkd = decompose [Canonical;Compat;NoBreak;Super;Fraction;Sub;
-                        Font;Circle;Wide;Vertical;Square;Initial;
-                        Narrow;Final;Isolated;Medial;Small]
+  let nfkd = decompose (fun _ -> true)
 end
