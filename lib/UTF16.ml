@@ -62,4 +62,4 @@ module UTF16String = UTF.Make(
 
 include UTF16String
 
-include UTFNormalisation.Make(UTF16String)(UTF16String)
+include UTFNormalization.Make(UTF16String)(UTF16String)

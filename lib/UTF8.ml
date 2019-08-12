@@ -78,4 +78,4 @@ module UTF8String = UTF.Make(
 
 include UTF8String
 
-include UTFNormalisation.Make(UTF8String)(UTF8String)
+include UTFNormalization.Make(UTF8String)(UTF8String)

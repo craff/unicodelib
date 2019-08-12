@@ -44,4 +44,4 @@ module UTF32String = UTF.Make(
 
 include UTF32String
 
-include UTFNormalisation.Make(UTF32String)(UTF32String)
+include UTFNormalization.Make(UTF32String)(UTF32String)
