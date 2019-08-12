@@ -4,6 +4,13 @@ let unicodelib_db =
   try Sys.getenv "UNICODELIB_DB"
   with Not_found -> UnicodeConfig.unicodelib_db
 
+let prefix_tree : prefix_tree Lazy.t =
+  lazy (
+      let m = PermanentMap.open_map unicodelib_db in
+      let d = PermanentMap.get m (-1) in
+      PermanentMap.close_map m; d)
+
+
 let get_char_descr_from_file : Uchar.t -> char_description = fun u ->
   let m = PermanentMap.open_map unicodelib_db in
   let d = PermanentMap.get m (Uchar.to_int u) in

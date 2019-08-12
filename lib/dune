@@ -18,9 +18,14 @@
   (targets ./unicodelib.db)
   (deps ../unicode_parser/pa_UnicodeData.exe
         ../data/UnicodeData.txt
-	../data/NormalizationTest.txt)
+	../data/NormalizationTest.txt
+	../data/CompositionExclusions.txt)
   (action
-	(run ../unicode_parser/pa_UnicodeData.exe ../data/UnicodeData.txt ../data/NormalizationTest.txt unicodelib.db)))
+	(run ../unicode_parser/pa_UnicodeData.exe
+	  ../data/UnicodeData.txt
+	  ../data/NormalizationTest.txt
+	  ../data/CompositionExclusions.txt
+	  unicodelib.db)))
 
 (rule
   (targets ./Latin1.ml)

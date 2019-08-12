@@ -17,19 +17,19 @@ let print ch s =
   let l = UTF8.to_list s in
   List.iter (fun x -> Printf.fprintf ch "%04x " (Uchar.to_int x)) l
 
-let test pos x _nfc nfd _nfkc nfkd =
-  let nfd' = UTF8.nfd x in
-  if nfd' <> nfd then
-    begin
-      good := false;
-      Printf.eprintf "line %d, bad nfd %a => %a <> %a\n%!" pos.Pos.line print x print nfd' print nfd;
-    end;
-  let nfkd' = UTF8.nfkd x in
-  if nfkd' <> nfkd then
-    begin
-      good := false;
-      Printf.eprintf "line %d, bad nfkd %a => %a <> %a\n%!" pos.Pos.line print x print nfkd' print nfkd
-    end
+let test pos x nfc nfd nfkc nfkd =
+  let cmp name s1 s2 =
+    if s1 <> s2 then
+      begin
+        good := false;
+        Printf.eprintf "line %d, bad %s %a => %a <> %a\n%!"
+          pos.Pos.line name print x print s1 print s2;
+      end
+  in
+  cmp "nfd" (UTF8.nfd x) nfd;
+  cmp "nfc" (UTF8.nfc x) nfc;
+  cmp "nfkd" (UTF8.nfkd x) nfkd;
+  cmp "nfkc" (UTF8.nfkc x) nfkc
 
   (* Single mapping parser *)
 let%parser test =

@@ -9,7 +9,7 @@ type general_category =
   | Sm | Sc | Sk | So
 
 type combining_class =
-  | Spacing_split_enclosing_reordrant_and_Tibetan_subjoined
+  | Starter
   | Overlays_and_interior
   | Nuktas
   | Hiragana_Katakana_voicing_marks
@@ -86,6 +86,7 @@ type char_description =
   ; combining_class       : combining_class
   ; bidirectional_mapping : bidirectional_mapping
   ; decomposition         : (decomposition_tag * Uchar.t list) option
+  ; composition_exclusion : bool
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option
@@ -99,7 +100,7 @@ type char_description =
 
 let combining_class_to_int = function
   | Fixed_position n -> n
-  | Spacing_split_enclosing_reordrant_and_Tibetan_subjoined -> 0
+  | Starter -> 0
   | Overlays_and_interior   -> 1
   | Nuktas   -> 7
   | Hiragana_Katakana_voicing_marks   -> 8
@@ -123,3 +124,5 @@ let combining_class_to_int = function
   | Double_below -> 233
   | Double_above -> 234
   | Below_iota_subscript -> 240
+
+type prefix_tree = Node of (Uchar.t, Uchar.t option * prefix_tree) Hashtbl.t
