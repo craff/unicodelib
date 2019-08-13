@@ -74,4 +74,6 @@ module Make(In:UTFString)(Out:UTFString) = struct
   let nfc str = recompose (nfd str)
 
   let nfkc str = recompose (nfkd str)
+
+  let cuustom_nfc allowed_tags str = recompose (decompose allowed_tags str)
 end
