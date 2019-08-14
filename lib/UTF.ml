@@ -110,40 +110,6 @@ module Make = functor ( ED : EncDec ) ->
       fold (fun i _ -> i + 1) 0 s
 
     (*
-     * Compute the index of the n-th unicode character ecoded in a string if
-     * it exists.
-     * Arguments:
-     *   s : the string (that is supposed to be valid),
-     *   n : the character number (should be greater or equal to 0).
-     * Returns the index.
-     * Raise Out_of_bound in case the string is not long enough.
-     *)
-    let nth_index : string -> int -> int = fun s n ->
-      let len = String.length s in
-      let rec nth_ind count pos =
-        if pos >= len then
-          raise Out_of_bound
-        else if count = 0 then
-          pos
-        else
-          let (_, sz) = decode s pos in
-          nth_ind (count - 1) (pos + sz)
-      in nth_ind n 0
-
-    (*
-     * Compute the value of the n-th unicode character encoded in a string if
-     * it exists.
-     * Arguments:
-     *   s : the string (that is supposed to be valid),
-     *   n : the character number (should be greater or equal to 0).
-     * Returns the character.
-     * Raise Out_of_bound in case the string is not long enough.
-     *)
-    let nth : string -> int -> (Uchar.t * int) = fun s n ->
-      let pos = nth_index s n in
-      decode s pos
-
-    (*
      * Compute the index of the next unicode character encoded in a string
      * starting from a given index.
      * Arguments:
@@ -184,11 +150,56 @@ module Make = functor ( ED : EncDec ) ->
         | []    -> assert false
         | p::ps -> try
                      let (_, sz) = decode s p in
-                     if i - sz <> p then assert false;
+                     if p + sz <> i then assert false;
                      p
                    with
                      _ -> try_until_found ps
       in try_until_found ps
+
+    (*
+     * Compute the index of the n-th unicode character ecoded in a string if
+     * it exists.
+     * Arguments:
+     *   s : the string (that is supposed to be valid),
+     *   n : the character number (should be greater or equal to 0).
+     * Returns the index.
+     * Raise Out_of_bound in case the string is not long enough.
+     * if negatif: from end, -1, then last one
+     *)
+    let nth_index : string -> int -> int = fun s n ->
+      let len = String.length s in
+      let rec nth_ind count pos =
+        if pos >= len then
+          raise Out_of_bound
+        else if count = 0 then
+          pos
+        else
+          let pos = next s pos in
+          nth_ind (count - 1) pos
+      in
+      let rec rev_nth_ind count pos =
+        if pos < 0 then
+          raise Out_of_bound
+        else if count = 0 then
+          pos
+        else
+          let pos = prev s pos in
+          rev_nth_ind (count + 1) pos
+      in if n >= 0 then nth_ind n 0 else rev_nth_ind n (String.length s)
+
+
+    (*
+     * Compute the value of the n-th unicode character encoded in a string if
+     * it exists.
+     * Arguments:
+     *   s : the string (that is supposed to be valid),
+     *   n : the character number (should be greater or equal to 0).
+     * Returns the character.
+     * Raise Out_of_bound in case the string is not long enough.
+     *)
+    let nth : string -> int -> (Uchar.t * int) = fun s n ->
+      let pos = nth_index s n in
+      decode s pos
 
     (*
      * Compute the index of the first unicode character in a string.
