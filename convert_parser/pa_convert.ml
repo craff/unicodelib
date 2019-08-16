@@ -1,5 +1,8 @@
 open Pacomb
 open Grammar
+open Asttypes
+open Parsetree
+open Ast_helper
 
 (* Blank function *)
 let blank = Lex.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\026]+\\)*"
@@ -34,27 +37,34 @@ let _ =
 
   close_in infile;
 
-  let outfile = open_out outfile in
-  Printf.fprintf outfile "let conversion_array : int array =\n";
-  Printf.fprintf outfile "  let arr = Array.make 255 (-1) in\n";
+  let loc = Location.none in
+  let seq = ref [%expr arr] in
+  let int n = Exp.constant (Const.int n) in
   List.iter (fun (i,j) ->
-      Printf.fprintf outfile
-                    "  arr.(%d) <- %d;\n" i j) ld;
-  Printf.fprintf outfile "  arr\n%!";
-  Printf.fprintf outfile "\n\
-     exception Undefined\n\
-     \n\
-     let to_uchar : char -> Uchar.t =\n\
-       fun c ->\n\
-         let i = Char.code c in\n\
-         if (i < 0) || (i > 255) then raise Undefined;\n\
-                 (let u = conversion_array.(i) in if u < 0 then raise Undefined; Uchar.of_int u)\n\
-     \n\
-     let to_utf8 : string -> string =\n\
-       fun s -> UTF8.init (String.length s) (fun i -> to_uchar (s.[i - 1]))\n\
-     let to_utf16 : string -> string =\n\
-       fun s -> UTF16.init (String.length s) (fun i -> to_uchar (s.[i - 1]))\n\
-     let to_utf32 : string -> string =\n\
-       fun s -> UTF32.init (String.length s) (fun i -> to_uchar (s.[i - 1]))\n\
-                          ";
-  close_out outfile
+      seq := [%expr arr.([%e int i]) <- [%e int j]; [%e !seq]]) ld;
+  let str_items = [%str
+                let conversion_array : int array =
+                  let arr = Array.make 255 (-1) in
+                  [%e !seq]
+
+                exception Undefined
+                let to_uchar : char -> Uchar.t =
+                  fun c ->
+                  let i = Char.code c in
+                  if (i < 0) || (i > 255) then raise Undefined;
+                  let u = conversion_array.(i) in
+                   if u < 0 then raise Undefined; Uchar.of_int u
+
+                let to_utf8 : string -> string =
+                  fun s -> UTF8.init (String.length s)
+                             (fun i -> to_uchar (s.[i - 1]))
+
+                let to_utf16 : string -> string =
+                  fun s -> UTF16.init (String.length s)
+                             (fun i -> to_uchar (s.[i - 1]))
+
+                let to_utf32 : string -> string =
+                  fun s -> UTF32.init (String.length s)
+                             (fun i -> to_uchar (s.[i - 1]))]
+  in
+  Pparse.(write_ast Structure outfile str_items)
