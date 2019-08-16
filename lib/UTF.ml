@@ -1,4 +1,4 @@
-open UTFTypes
+open Types
 
 module type EncDec =
   sig
@@ -231,8 +231,8 @@ module Make = functor ( ED : EncDec ) ->
     let trim : string -> string = fun s ->
       let l = ref 0 in
       let r = ref (last s) in
-      while UCharInfo.is_space (look s !l) do l := next s !l done;
-      while UCharInfo.is_space (look s !r) do r := prev s !r done;
+      while CharInfo.is_space (look s !l) do l := next s !l done;
+      while CharInfo.is_space (look s !r) do r := prev s !r done;
       String.sub s !l ((next s !r) - !l)
 
     (*

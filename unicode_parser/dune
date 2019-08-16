@@ -2,5 +2,5 @@
   (name pa_UnicodeData)
   (public_name pa_UnicodeData)
   (modules :standard)
-  (preprocess (pps pacomb.ppx))
-  (libraries unix sqlite3 pacomb))
+  (preprocess (pps ppxlib.metaquot pacomb.ppx))
+  (libraries unix sqlite3 ppxlib pacomb))
