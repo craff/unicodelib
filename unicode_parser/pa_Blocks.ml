@@ -14,7 +14,7 @@ let camlify =
   String.map (function ' ' -> '_' | '-' -> '_' | c -> c)
 
 let%parser name = Grammar.layout Lex.noblank
-  ((s::RE"[-0-9A-Za-z ]+") (RE"[ \t\r]*\n")  => camlify s)
+  ((s::RE"[-0-9A-Za-z ]+[0-9A-Za-z]") (RE"\n")  => camlify s)
 
 
 let%parser item = (r::range) ';' (name::name) => (r,name)
