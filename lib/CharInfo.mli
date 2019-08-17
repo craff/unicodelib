@@ -121,8 +121,18 @@ val to_lower : Uchar.t -> Uchar.t option
 val to_upper : Uchar.t -> Uchar.t option
 val is_space : Uchar.t -> bool
 
-(** Block of the character *)
-include module type of Blocks
+(** type for the block of a character.
+    Variant type with only constant constructor taken from
+    UNIDATA/Block.txt with the rule:
+
+    ' ' => '_'
+    '-' => '_'
+
+    for instance "Kana Extended-A" gives "Kana_Extended_A" *)
+type block = Blocks.block
+
+val block : Uchar.t -> block
+
 
 (** private type and function used by normalization *)
 type prefix_tree = Node of (Uchar.t, Uchar.t option * prefix_tree) Hashtbl.t

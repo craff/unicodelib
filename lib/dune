@@ -2,7 +2,7 @@
   (name unicodelib)
   (public_name unicodelib)
   (modules :standard)
-  (private_modules Types Normalization UTF PermanentMap)
+  (private_modules Types Normalization UTF PermanentMap Blocks)
   (libraries sqlite3))
 
 (install

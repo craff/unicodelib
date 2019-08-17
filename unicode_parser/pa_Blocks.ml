@@ -16,7 +16,6 @@ let camlify =
 let%parser name = Grammar.layout Lex.noblank
   ((s::RE"[-0-9A-Za-z ]+") (RE"\n")  => camlify s)
 
-
 let%parser item = (r::range) ';' (name::name) => (r,name)
 
 let%parser items = Grammar.star item
@@ -73,7 +72,7 @@ let _ =
              [%e expr l1] else [%e expr l2]]
   in
 
-  let str_items = td ::  [%str let range c =
+  let str_items = td ::  [%str let block c =
                             let n = Uchar.to_int c in
                             [%e expr blocks]]
   in
