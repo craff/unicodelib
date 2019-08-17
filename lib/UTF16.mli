@@ -1,19 +1,51 @@
+(** {1 Module to manipulate UTF16 encoded string} *)
+
 open CharInfo
 
+(** [encode c]: git the string encoding [c] in UTF16 *)
 val encode : Uchar.t -> string
+
+(** [decode s offset] git the unicode  character at position [offset] in [s] and
+    the offset of the next character in the string *)
 val decode : string -> int -> (Uchar.t * int)
+
+(** [validate s] returns true iff [s] is a valid UTF16 string *)
 val validate : string -> bool
+
+(** [fold  fn a  s] gives [f  ... (f  a c1) ...  cn] is [s]  is composed  of the
+unicode characters [c1] ... [cn] *)
 val fold : ('a -> Uchar.t -> 'a) -> 'a -> string -> 'a
+
+(** [nth_index s n] gives the index of the [n]th uncode character in [s]. If [n]
+is  negative,  count from  the  end  ([nth_index s  (-1)]  is  the last  unicode
+character in [s] *)
 val nth_index : string -> int -> int
+
+(**  [nth s  n] gives  the [n]th  unicode  character in  [s] and  its length  in
+UTF16. *)
 val nth : string -> int -> (Uchar.t * int)
+
+(**  [nth  s offset]  Gives  the  offset of  the  next  unicode character  after
+[offset] *)
 val next : string -> int -> int
+
+(** [prev  s offset] Gives  the offset of  the previous unicode  character after
+[offset] *)
 val prev : string -> int -> int
+
+(** [trim s] removes all spaces at beginning and end of [s] *)
 val trim : string -> string
+
+(** [init  len fn] creates  a UTF16 encoded string  of length [len]  whose [n]th
+character is [fn n] *)
 val init : int -> (int -> Uchar.t) -> string
-val empty_string : string
+
+(** Conversion between UTF16 encoded string and list of unicode characters *)
 val of_list : Uchar.t list -> string
 val to_list : string -> Uchar.t list
 
+(** Version  of Ocaml's [Buffer] module  with [add_char] and [init]  modified to
+deal with UTF16 encode unicode charaters *)
 module Buffer : sig
   include module type of Buffer
 
@@ -22,9 +54,19 @@ module Buffer : sig
   val init : int -> (int -> Uchar.t) -> t
 end
 
-val nfc : string -> string
+(** Standard normalization functions *)
 val nfd : string -> string
-val nfkc : string -> string
+val nfc : string -> string
 val nfkd : string -> string
-val custom_nfc : (decomposition_tag -> bool) -> string -> string
+val nfkc : string -> string
+
+(**  [custom_nfd  allowed  s]  will   decompose  all  unicode  characters  whose
+decomposition tag is evalued to true by [allowed] *)
 val custom_nfd : (decomposition_tag -> bool) -> string -> string
+
+(**  [custom_nfc  allowed  s]  will   decompose  all  unicode  characters  whose
+decomposition tag is evalued to true  by [allowed] and then recompose characters
+according to the canonical equivalence.  [custom_nfc allowed s = nfc [custom_nfd
+allowed s)].
+ *)
+val custom_nfc : (decomposition_tag -> bool) -> string -> string
