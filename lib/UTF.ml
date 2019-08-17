@@ -238,7 +238,7 @@ module Make = functor ( ED : EncDec ) ->
     (*
      * Buffer for unicode strings.
      *)
-    module Buf =
+    module Buffer =
       struct
         include Buffer
         type buf = string
@@ -266,16 +266,16 @@ module Make = functor ( ED : EncDec ) ->
      * [f i].
      *)
     let init : int -> (int -> Uchar.t) -> string = fun len f ->
-      let b = Buf.create (2 * len) in
+      let b = Buffer.create (2 * len) in
       for i = 1 to len do
-        Buf.add_char b (f i)
+        Buffer.add_char b (f i)
       done;
-      Buf.contents b
+      Buffer.contents b
 
     let of_list : Uchar.t list -> string = fun l ->
-      let b = Buf.create 1024 in
-      List.iter (fun c -> Buf.add_char b c) l;
-      Buf.contents b
+      let b = Buffer.create 1024 in
+      List.iter (fun c -> Buffer.add_char b c) l;
+      Buffer.contents b
 
     let to_list : string -> Uchar.t list = fun s ->
       List.rev (fold (fun acc x -> x::acc) [] s)

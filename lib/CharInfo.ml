@@ -1,4 +1,4 @@
-open Types
+include Types
 
 let unicodelib_db =
   try Sys.getenv "UNICODELIB_DB"
