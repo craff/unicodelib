@@ -39,3 +39,9 @@
   (deps ../convert_parser/pa_convert.exe ../encoding_data/ROMAN.TXT)
   (action
 	(run ../convert_parser/pa_convert.exe ../encoding_data/ROMAN.TXT Roman.ml)))
+
+(rule
+  (targets ./Blocks.ml)
+  (deps ../unicode_parser/pa_Blocks.exe ../data/Blocks.txt)
+  (action
+        (run ../unicode_parser/pa_Blocks.exe ../data/Blocks.txt Blocks.ml)))

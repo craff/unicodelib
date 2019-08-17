@@ -1,4 +1,5 @@
 include Types
+include Blocks
 
 let unicodelib_db =
   try Sys.getenv "UNICODELIB_DB"

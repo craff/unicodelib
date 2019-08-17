@@ -121,6 +121,9 @@ val to_lower : Uchar.t -> Uchar.t option
 val to_upper : Uchar.t -> Uchar.t option
 val is_space : Uchar.t -> bool
 
+(** Block of the character *)
+include module type of Blocks
+
 (** private type and function used by normalization *)
 type prefix_tree = Node of (Uchar.t, Uchar.t option * prefix_tree) Hashtbl.t
 val prefix_tree : prefix_tree Lazy.t
