@@ -79,6 +79,14 @@ type decomposition_tag =
   | Compat      (* Otherwise unspecified compatibility character. *)
   | Canonical
 
+type east_asian_width_category =
+  | Neutral
+  | Narrow
+  | FullWidth
+  | HalfWidth
+  | Wide
+  | Ambiguous
+
 type char_description =
   { code                  : Uchar.t
   ; name                  : string list
@@ -87,6 +95,7 @@ type char_description =
   ; bidirectional_mapping : bidirectional_mapping
   ; decomposition         : (decomposition_tag * Uchar.t list) option
   ; composition_exclusion : bool
+  ; east_asian_width      : east_asian_width_category
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option

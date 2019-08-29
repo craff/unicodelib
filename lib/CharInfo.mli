@@ -89,6 +89,14 @@ type decomposition_tag =
   | Compat      (** Otherwise unspecified compatibility character. *)
   | Canonical   (** Fully equivalent character *)
 
+type east_asian_width_category =
+  | Neutral
+  | Narrow
+  | FullWidth
+  | HalfWidth
+  | Wide
+  | Ambiguous
+
 (** The character description *)
 type char_description =
   { code                  : Uchar.t
@@ -98,6 +106,7 @@ type char_description =
   ; bidirectional_mapping : bidirectional_mapping
   ; decomposition         : (decomposition_tag * Uchar.t list) option
   ; composition_exclusion : bool
+  ; east_asian_width      : east_asian_width_category
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option
@@ -137,3 +146,12 @@ val block : Uchar.t -> block
 (** private type and function used by normalization *)
 type prefix_tree = Node of (Uchar.t, Uchar.t option * prefix_tree) Hashtbl.t
 val prefix_tree : prefix_tree Lazy.t
+
+type width_context = EastAsian | Other
+(** Gives the column width according to
+
+  https://stackoverflow.com/questions/3634627/how-to-know-the-preferred-display-width-in-columns-of-unicode-characters
+  http://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
+  https://www.unicode.org/reports/tr11
+ *)
+val width : ?context:width_context -> Uchar.t -> int

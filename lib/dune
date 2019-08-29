@@ -20,12 +20,14 @@
   (deps ../unicode_parser/pa_UnicodeData.exe
         ../data/UnicodeData.txt
 	../data/NormalizationTest.txt
-	../data/CompositionExclusions.txt)
+	../data/CompositionExclusions.txt
+	../data/EastAsianWidth.txt)
   (action
 	(run ../unicode_parser/pa_UnicodeData.exe
 	  ../data/UnicodeData.txt
 	  ../data/NormalizationTest.txt
 	  ../data/CompositionExclusions.txt
+   	  ../data/EastAsianWidth.txt
 	  unicodelib.db)))
 
 (rule

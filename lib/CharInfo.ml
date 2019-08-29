@@ -53,3 +53,23 @@ let is_space : Uchar.t -> bool = fun c ->
   (0x0009 <= c && c <= 0x000d) || c = 0x0020 || c = 0x00a0
   || c = 0x1680 || c = 0x180e || (0x2000 <= c && c <= 0x200a)
   || c = 0x202f || c = 0x205f || c = 0x3000
+
+
+type width_context = EastAsian | Other
+
+let width ?(context=Other) c =
+  let i = Uchar.to_int c in
+  try
+    let inf = get_char_descr c in
+    let gc = inf.general_category in
+    if i = 0 then 0
+    else if gc = Cc then -1
+    else if gc = Me || gc = Mn then 0
+    else if i = 0x007D (* SOFT HYPHEN *) then 1
+    else if i = 0x200B (* ZERO WIDTH SPACE *) || gc = Cf then 0
+    else if i >= 0x1160 && i <= 0x11FF (*Hangul Jamo medial vowels and final consonants *)
+    then 0
+    else if inf.east_asian_width = FullWidth || inf.east_asian_width = Wide
+            || (context = EastAsian && inf.east_asian_width = Ambiguous) then 2
+    else 1
+  with Not_found -> 1
