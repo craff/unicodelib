@@ -3,11 +3,37 @@
 (** The general category: for instance Ll = lowercase letter *)
 type general_category =
   (* normative *)
-  | Lu | Ll | Lt | Mn | Mc | Me | Nd | Nl | No
-  | Zs | Zl | Zp | Cc | Cf | Cs | Co | Cn
+  | Lu (* Letter, Uppercase *)
+  | Ll (* Letter, Lowercase *)
+  | Lt (* Letter, Titlecase *)
+  | Mn (* Mark, non spacing *)
+  | Mc (* Mark, combining *)
+  | Me (* Mark, enclosing *)
+  | Nd (* Number, decimal *)
+  | Nl (* Number, letter *)
+  | No (* Number, other *)
+  | Zs (* Separator, space *)
+  | Zl (* Separator, line *)
+  | Zp (* Separator, paragraph *)
+  | Cc (* Control, char *)
+  | Cf (* Control, format *)
+  | Cs (* Control, surrogate *)
+  | Co (* Control, other *)
+  | Cn (* Control, not assigned *)
   (* informative *)
-  | Lm | Lo | Pc | Pd | Ps | Pe | Pi | Pf | Po
-  | Sm | Sc | Sk | So
+  | Lm (* Letter, modifier *)
+  | Lo (* Letter, other *)
+  | Pc (* Punctuation, connector *)
+  | Pd (* Punctuation, dash *)
+  | Ps (* Punctuation, open *)
+  | Pe (* Punctuation, close *)
+  | Pi (* Punctuation, initial quote *)
+  | Pf (* Punctuation, final quote *)
+  | Po (* Punctuation, other *)
+  | Sm (* Symbol, math *)
+  | Sc (* Symbol, currency *)
+  | Sk (* Symbol, modifier *)
+  | So (* Symbol, other *)
 
 (** The combining class: used by normalization to order characters *)
 type combining_class =
