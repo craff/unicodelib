@@ -94,7 +94,7 @@ let%parser code =
 
 module NTest = struct
   (* Blank function *)
-  let blank = Lex.blank_regexp "\\(\\([#@][^\n]*\\)\\|[ \r\t\026]+\\)*"
+  let blank = Regexp.blank_regexp "\\(\\([#@][^\n]*\\)\\|[ \r\t\026]+\\)*"
   (* bug: "\\([ \r\t\026]\\|\\(\\(#[^\n]*\\)\\)*" *)
 
   let%parser string = (l::plus code) => l
@@ -119,7 +119,7 @@ let exclusion_tbl = Hashtbl.create 1024
 
 module CExcl = struct
   (* Blank function *)
-  let blank = Lex.blank_regexp "\\(\\([#@][^\n]*\\)\\|[ \r\t\026]+\\)*"
+  let blank = Regexp.blank_regexp "\\(\\([#@][^\n]*\\)\\|[ \r\t\026]+\\)*"
   (* bug: "\\([ \r\t\026]\\|\\(\\(#[^\n]*\\)\\)*" *)
 
   let%parser string = (l::plus code) => l
@@ -273,7 +273,7 @@ let%parser file_contents =
   (l::star ( (s::single) => s
            ; (r::range) => r)) => l
 
-let blank = Lex.blank_regexp "[ \t\r]*"
+let blank = Regexp.blank_regexp "[ \t\r]*"
 let parse = parse_channel file_contents blank
 
 let flatten_data ld =

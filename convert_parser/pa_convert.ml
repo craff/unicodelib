@@ -5,7 +5,7 @@ open Parsetree
 open Ast_helper
 
 (* Blank function *)
-let blank = Lex.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\026]+\\)*"
+let blank = Regexp.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\026]+\\)*"
    (* bug: "\\([ \r\t\026]\\|\\(\\(#[^\n]*\\)\\)*" *)
 
 (* Parser for hexadecimal integers *)

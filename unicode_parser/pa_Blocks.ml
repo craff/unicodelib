@@ -3,7 +3,7 @@ open Ast_helper
 open Longident
 open Parsetree
 
-let blank = Lex.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\n]+\\)*"
+let blank = Regexp.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\n]+\\)*"
 
 let%parser code =
   (c::RE"[0-9A-F]+") => int_of_string ("0x" ^ c)
