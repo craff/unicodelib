@@ -16,6 +16,9 @@ val validate : string -> bool
 unicode characters [c1] ... [cn] *)
 val fold : ('a -> Uchar.t -> 'a) -> 'a -> string -> 'a
 
+(** map all utf8 chars in a string *)
+val map : (Uchar.t -> Uchar.t) -> string -> string
+
 (** [nth_index s n] gives the index of the [n]th uncode character in [s]. If [n]
 is  negative,  count from  the  end  ([nth_index s  (-1)]  is  the last  unicode
 character in [s] *)
@@ -86,8 +89,11 @@ val prev_grapheme : string -> int -> int
 
 (** [fold_left_grapheme fn  acc s] applies fn  to acc and all the  grapheme is s
     starting by the first one (like List.fold_left) *)
-val fold_left_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
+val fold_left_grapheme : ('a -> string -> 'a) -> 'a -> string -> 'a
 
 (** [fold_right_grapheme fn acc  s] applies fn to acc and all  the grapheme is s
     starting by the first one (like List.fold_left) *)
-val fold_right_grapheme : ('a -> string -> 'a) -> string -> 'a -> 'a
+val fold_right_grapheme : (string -> 'a -> 'a) -> string -> 'a -> 'a
+
+(** Map all graphemes in a string *)
+val map_grapheme : (string -> string) -> string -> string

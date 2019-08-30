@@ -349,7 +349,7 @@ let str_items = [%str
     with
       Exit -> !npos
 
-  let fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a =
+  let fold_grapheme : ('a -> string -> 'a) -> 'a -> string -> 'a =
     fun fn acc s ->
     let pos = ref 0 in
     let res = ref acc in
@@ -357,7 +357,7 @@ let str_items = [%str
       let npos = next_grapheme s !pos in
       let s = String.sub s !pos (npos - !pos) in
       pos := npos;
-      res := fn s !res;
+      res := fn res !s;
     done;
     !res
 ]

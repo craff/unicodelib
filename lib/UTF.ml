@@ -29,6 +29,7 @@ module type UTFString = sig
   val decode : string -> int -> (Uchar.t * int)
   val validate : string -> bool
   val fold : ('a -> Uchar.t -> 'a) -> 'a -> string -> 'a
+  val map : (Uchar.t -> Uchar.t) -> string -> string
   val nth_index : string -> int -> int
   val nth : string -> int -> (Uchar.t * int)
   val next : string -> int -> int
@@ -41,8 +42,9 @@ module type UTFString = sig
   val grapheme_break : string -> int -> bool
   val next_grapheme : string -> int -> int
   val prev_grapheme : string -> int -> int
-  val fold_left_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
-  val fold_right_grapheme : ('a -> string -> 'a) -> string -> 'a -> 'a
+  val fold_left_grapheme : ('a -> string -> 'a) -> 'a -> string -> 'a
+  val fold_right_grapheme : (string -> 'a -> 'a) -> string -> 'a -> 'a
+  val map_grapheme : (string -> string) -> string -> string
 end
 
 module Make = functor ( ED : EncDec ) ->
@@ -104,6 +106,10 @@ module Make = functor ( ED : EncDec ) ->
             let (u, l) = decode s i in
             fold' (f acc u) (i + l)
         in fold' ini 0
+
+    let map : (Uchar.t -> Uchar.t) -> string -> string = fun fn s ->
+      let l = fold (fun acc c -> encode (fn c) :: acc) [] s in
+      String.concat "" (List.rev l)
 
     (*
      * Compute the length of an encoded unicode string.
@@ -364,7 +370,7 @@ module Make = functor ( ED : EncDec ) ->
       with
         Exit -> !npos
 
-    let fold_left_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a =
+    let fold_left_grapheme : ('a -> string -> 'a) -> 'a -> string -> 'a =
       fun fn acc s ->
         let pos = ref 0 in
         let res = ref acc in
@@ -372,11 +378,11 @@ module Make = functor ( ED : EncDec ) ->
           let npos = next_grapheme s !pos in
           let s = String.sub s !pos (npos - !pos) in
           pos := npos;
-          res := fn s !res;
+          res := fn !res s;
         done;
         !res
 
-    let fold_right_grapheme : ('a -> string -> 'a) -> string -> 'a -> 'a =
+    let fold_right_grapheme : (string -> 'a -> 'a) -> string -> 'a -> 'a =
       fun fn s acc ->
         let pos = ref (String.length s)  in
         let res = ref acc in
@@ -384,8 +390,13 @@ module Make = functor ( ED : EncDec ) ->
           let npos = prev_grapheme s !pos in
           let s = String.sub s npos (!pos - npos) in
           pos := npos;
-          res := fn !res s;
+          res := fn s !res;
         done;
         !res
+
+    let map_grapheme : (string -> string) -> string -> string = fun fn s ->
+      let l = fold_left_grapheme (fun acc c -> fn c :: acc) [] s in
+      String.concat "" (List.rev l)
+
 
   end

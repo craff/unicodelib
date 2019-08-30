@@ -29,10 +29,10 @@ let test pos l0 =
       | [x]::l -> (x,true)::fn l
       | (x::l1)::l -> (x,false)::fn (l1::l)
     in
-    let l = List.rev (UTF8.fold_left_grapheme (fun l acc -> l::acc) [] s) in
+    let l = List.rev (UTF8.fold_left_grapheme (fun acc l -> l::acc) [] s) in
     let l = List.map (fun s -> UTF8.to_list s) l in
     let l = fn l in
-    let l' = UTF8.fold_right_grapheme (fun acc l -> l::acc) s [] in
+    let l' = UTF8.fold_right_grapheme (fun l acc -> l::acc) s [] in
     let l' = List.map (fun s -> UTF8.to_list s) l' in
     let l' = fn l' in
     if l <> l0 || l' <> l0 then
