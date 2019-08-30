@@ -22,8 +22,6 @@ let test pos l0 =
   try
     let chars = List.map fst l0 in
     let s = UTF8.of_list chars in
-    let l = List.rev (UTF8.fold_grapheme (fun l acc -> l::acc) [] s) in
-    let l = List.map (fun s -> UTF8.to_list s) l in
     let rec fn = function
       | [] -> []
       | []::_ -> Printf.eprintf "unexpected empty at %a\n%!"
@@ -31,8 +29,13 @@ let test pos l0 =
       | [x]::l -> (x,true)::fn l
       | (x::l1)::l -> (x,false)::fn (l1::l)
     in
+    let l = List.rev (UTF8.fold_left_grapheme (fun l acc -> l::acc) [] s) in
+    let l = List.map (fun s -> UTF8.to_list s) l in
     let l = fn l in
-    if l <> l0 then
+    let l' = UTF8.fold_right_grapheme (fun acc l -> l::acc) s [] in
+    let l' = List.map (fun s -> UTF8.to_list s) l' in
+    let l' = fn l' in
+    if l <> l0 || l' <> l0 then
       begin
         Printf.eprintf "break fail at %a\n%!"
           (Pos.print_pos ()) pos;

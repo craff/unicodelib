@@ -71,14 +71,23 @@ allowed s)].
  *)
 val custom_nfc : (decomposition_tag -> bool) -> string -> string
 
-(** [grapheme_break s n] returns true is position n is between two
-    distinct grapheme *)
+(** [grapheme_break  s n]  returns true  is position n  is between  two distinct
+    grapheme *)
 val grapheme_break : string -> int -> bool
 
-(** [next_grapheme s n] returns the postion of the next grapheme.
-    raise Not_found at the end of the string.  *)
+(**  [next_grapheme s  n]  returns  the postion  of  the  next grapheme.   raise
+    Not_found at  the end of the  string. Raise Invalid_argument if  position is
+    bad (not at start of an unicode char or outside the string *)
 val next_grapheme : string -> int -> int
 
-(** [fold_graphement fn acc s] applies fn to acc and all the grapheme
-    is s starting by the first one (like List.fold_left) *)
-val fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
+(**  [prev_grapheme s  n]  returns  the postion  of  the  next grapheme.   raise
+    Invaid_argument is n = 0 or n too big.  *)
+val prev_grapheme : string -> int -> int
+
+(** [fold_left_grapheme fn  acc s] applies fn  to acc and all the  grapheme is s
+    starting by the first one (like List.fold_left) *)
+val fold_left_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
+
+(** [fold_right_grapheme fn acc  s] applies fn to acc and all  the grapheme is s
+    starting by the first one (like List.fold_left) *)
+val fold_right_grapheme : ('a -> string -> 'a) -> string -> 'a -> 'a

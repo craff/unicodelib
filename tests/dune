@@ -11,3 +11,9 @@
    (preprocess (pps pacomb.ppx))
    (libraries unix sqlite3 pacomb unicodelib)
    (action (run ./Break.exe ../../../data/GraphemeBreakTest.txt)))
+
+(executable
+   (name Generate)
+   (modules Generate)
+   (preprocess (pps ppxlib.metaquot pacomb.ppx))
+   (libraries unix sqlite3 ppxlib pacomb unicodelib))

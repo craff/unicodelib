@@ -40,7 +40,9 @@ module type UTFString = sig
   val to_list : string -> Uchar.t list
   val grapheme_break : string -> int -> bool
   val next_grapheme : string -> int -> int
-  val fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
+  val prev_grapheme : string -> int -> int
+  val fold_left_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
+  val fold_right_grapheme : ('a -> string -> 'a) -> string -> 'a -> 'a
 end
 
 module Make = functor ( ED : EncDec ) ->
@@ -156,7 +158,7 @@ module Make = functor ( ED : EncDec ) ->
                      if p + sz <> i then assert false;
                      p
                    with
-                     _ -> try_until_found ps
+                     Invalid_argument _ -> try_until_found ps
       in try_until_found ps
 
     (*
@@ -344,11 +346,25 @@ module Make = functor ( ED : EncDec ) ->
           npos := next s !npos;
           if grapheme_break s !npos then raise Exit
         done;
-        raise Not_found (* empty string *)
+        raise Not_found (* end of string *)
       with
         Exit -> !npos
 
-    let fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a =
+    let prev_grapheme : string -> int -> int = fun s pos ->
+      let npos = ref pos in
+      try
+        while !npos > 0 do
+          try
+            npos := prev s !npos;
+            if grapheme_break s !npos then raise Exit
+          with
+            Invalid_argument _ -> decr npos
+        done;
+        0
+      with
+        Exit -> !npos
+
+    let fold_left_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a =
       fun fn acc s ->
         let pos = ref 0 in
         let res = ref acc in
@@ -359,4 +375,17 @@ module Make = functor ( ED : EncDec ) ->
           res := fn s !res;
         done;
         !res
+
+    let fold_right_grapheme : ('a -> string -> 'a) -> string -> 'a -> 'a =
+      fun fn s acc ->
+        let pos = ref (String.length s)  in
+        let res = ref acc in
+        while !pos > 0 do
+          let npos = prev_grapheme s !pos in
+          let s = String.sub s npos (!pos - npos) in
+          pos := npos;
+          res := fn !res s;
+        done;
+        !res
+
   end
