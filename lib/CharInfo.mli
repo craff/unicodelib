@@ -123,6 +123,30 @@ type east_asian_width_category =
   | Wide
   | Ambiguous
 
+type grapheme_break_property =
+  | Other
+  | CR
+  | LF
+  | Prepend
+  | Control
+  | Extend
+  | SpacingMark
+  | L | V | T | LV | LVT
+  | ZWJ
+  | RegionalIndicator
+  | ExtPict
+
+val grapheme_break_to_string : grapheme_break_property -> string
+
+type emoji =
+  | NotEmoji
+  | Emoji
+  | EmojiPresentation
+  | EmojiModifier
+  | EmojiModifierBase
+  | EmojiComponent
+  | ExtendedPictographic
+
 (** The character description *)
 type char_description =
   { code                  : Uchar.t
@@ -133,6 +157,8 @@ type char_description =
   ; decomposition         : (decomposition_tag * Uchar.t list) option
   ; composition_exclusion : bool
   ; east_asian_width      : east_asian_width_category
+  ; grapheme_break        : grapheme_break_property
+  ; emoji_type            : emoji
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option
@@ -181,3 +207,15 @@ type width_context = EastAsian | Other
   https://www.unicode.org/reports/tr11
  *)
 val width : ?context:width_context -> Uchar.t -> int
+
+type previous_chars =
+  EvenRegionalIndicator | ExtPictExtendStar | NoPrevious
+
+(* [break_between previous c1 c2] returns true if and only if a grapheme break
+   is between c1 and c2.
+   previous must tel if there is an even number of RI before c1, if
+   c1 is a RI. It should tell if there is a pattern
+   ExtPict Extend* before c1 if c1 is ZWJ *)
+
+val break_between : previous_chars -> grapheme_break_property ->
+                    grapheme_break_property -> bool

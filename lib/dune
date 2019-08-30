@@ -21,13 +21,17 @@
         ../data/UnicodeData.txt
 	../data/NormalizationTest.txt
 	../data/CompositionExclusions.txt
-	../data/EastAsianWidth.txt)
+	../data/EastAsianWidth.txt
+	../data/GraphemeBreakProperty.txt
+	../data/emoji-data.txt)
   (action
 	(run ../unicode_parser/pa_UnicodeData.exe
 	  ../data/UnicodeData.txt
 	  ../data/NormalizationTest.txt
 	  ../data/CompositionExclusions.txt
    	  ../data/EastAsianWidth.txt
+  	  ../data/GraphemeBreakProperty.txt
+          ../data/emoji-data.txt
 	  unicodelib.db)))
 
 (rule

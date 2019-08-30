@@ -4,3 +4,10 @@
    (preprocess (pps pacomb.ppx))
    (libraries unix sqlite3 pacomb unicodelib)
    (action (run ./Normalization.exe ../../../data/NormalizationTest.txt)))
+
+(test
+   (name Break)
+   (modules Break)
+   (preprocess (pps pacomb.ppx))
+   (libraries unix sqlite3 pacomb unicodelib)
+   (action (run ./Break.exe ../../../data/GraphemeBreakTest.txt)))

@@ -73,3 +73,27 @@ let width ?(context=Other) c =
             || (context = EastAsian && inf.east_asian_width = Ambiguous) then 2
     else 1
   with Not_found -> 1
+
+type previous_chars =
+  EvenRegionalIndicator | ExtPictExtendStar | NoPrevious
+
+(* previous must tel if the is an even number of RI before c1, if
+   c1 is a RI. It should tell if there is a pattern
+   ExtPict Extend* before c1 if c1 is ZWJ *)
+let break_between previous bp1 bp2 =
+  match (bp1,bp2) with
+  | (CR, LF)                 -> false (* rule 3.0 *)
+  | ((Control | CR | LF), _) -> true  (* rule 4.0 *)
+  | (_, (Control | CR | LF)) -> true  (* rule 5.0 *)
+  | (L, (L | V | LV | LVT))  -> false (* rule 6.0 *)
+  | ((LV | V), (V | T))      -> false (* rule 7.0 *)
+  | ((LVT | T), T)           -> false (* rule 8.0 *)
+  | (_, (Extend | ZWJ))      -> false (* rule 9.0 *)
+  | (_, SpacingMark)         -> false (* rule 9.1 *)
+  | (Prepend, _)             -> false (* rule 9.2 *)
+  | (ZWJ, ExtPict) when previous = ExtPictExtendStar
+                             -> false (* rule 11.0 *)
+  | (RegionalIndicator, RegionalIndicator) when previous = EvenRegionalIndicator
+                             -> false (* rule 12.0 and 13.0, assuming *)
+
+  | _                        -> true  (* rule 999.0 *)

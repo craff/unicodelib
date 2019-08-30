@@ -38,6 +38,9 @@ module type UTFString = sig
   val empty_string : string
   val of_list : Uchar.t list -> string
   val to_list : string -> Uchar.t list
+  val grapheme_break : string -> int -> bool
+  val next_grapheme : string -> int -> int
+  val fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a
 end
 
 module Make = functor ( ED : EncDec ) ->
@@ -284,4 +287,76 @@ module Make = functor ( ED : EncDec ) ->
      * Empty encoded string.
      *)
     let empty_string : string = ""
+
+    let grapheme_break : string -> int -> bool = fun s pos ->
+      let open CharInfo in
+      let get_bp c =
+        try
+          (get_char_descr c).grapheme_break
+        with
+          Not_found -> Other
+      in
+      if pos = 0 || pos >= String.length s then true else
+        let i0 = prev s pos in
+        let c1 = look s i0 and c2 = look s pos in
+        let bp1 = get_bp c1 and bp2 = get_bp c2 in
+        let rec previous_ri acc i0 bp1 =
+          match bp1 with
+          | RegionalIndicator ->
+             begin
+               if i0 = 0 then not acc else
+                 let i0 = prev s i0 in
+                 let c1 = look s i0 in
+                 let bp1 = get_bp c1 in
+                 previous_ri (not acc) i0 bp1
+             end
+          | _ -> acc
+        in
+        let rec previous_pict i0 bp1 =
+          match bp1 with
+          | Extend ->
+             begin
+               if i0 = 0 then false else
+                 let i0 = prev s i0 in
+                 let c1 = look s i0 in
+                 let bp1 = get_bp c1 in
+                 previous_pict i0 bp1
+             end
+          | ExtPict -> true
+          | _       -> false
+        in
+        let previous =
+          match bp1 with
+          | ZWJ ->
+             if previous_pict i0 Extend then ExtPictExtendStar
+             else NoPrevious
+          | RegionalIndicator ->
+             if previous_ri false i0 RegionalIndicator then EvenRegionalIndicator
+             else NoPrevious
+          | _ -> NoPrevious
+        in
+        break_between previous bp1 bp2
+
+    let next_grapheme : string -> int -> int = fun s pos ->
+      let npos = ref pos in
+      try
+        while !npos < String.length s do
+          npos := next s !npos;
+          if grapheme_break s !npos then raise Exit
+        done;
+        raise Not_found (* empty string *)
+      with
+        Exit -> !npos
+
+    let fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a =
+      fun fn acc s ->
+        let pos = ref 0 in
+        let res = ref acc in
+        while !pos < String.length s do
+          let npos = next_grapheme s !pos in
+          let s = String.sub s !pos (npos - !pos) in
+          pos := npos;
+          res := fn s !res;
+        done;
+        !res
   end

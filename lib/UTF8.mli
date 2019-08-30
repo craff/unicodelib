@@ -69,3 +69,15 @@ according to the canonical equivalence.  [custom_nfc allowed s = nfc [custom_nfd
 allowed s)].
  *)
 val custom_nfc : (decomposition_tag -> bool) -> string -> string
+
+(** [grapheme_break s n] returns true is position n is between two
+    distinct grapheme *)
+val grapheme_break : string -> int -> bool
+
+(** [next_grapheme s n] returns the postion of the next grapheme.
+    raise Not_found at the end of the string.  *)
+val next_grapheme : string -> int -> int
+
+(** [fold_graphement fn acc s] applies fn to acc and all the grapheme
+    is s starting by the first one (like List.fold_left) *)
+val fold_grapheme : (string -> 'a -> 'a) -> 'a -> string -> 'a

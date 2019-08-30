@@ -87,6 +87,28 @@ type east_asian_width_category =
   | Wide
   | Ambiguous
 
+type grapheme_break_property =
+  | Other
+  | CR
+  | LF
+  | Prepend
+  | Control
+  | Extend
+  | SpacingMark
+  | L | V | T | LV | LVT
+  | ZWJ
+  | RegionalIndicator
+  | ExtPict
+
+type emoji =
+  | NotEmoji
+  | Emoji
+  | EmojiPresentation
+  | EmojiModifier
+  | EmojiModifierBase
+  | EmojiComponent
+  | ExtendedPictographic
+
 type char_description =
   { code                  : Uchar.t
   ; name                  : string list
@@ -96,6 +118,8 @@ type char_description =
   ; decomposition         : (decomposition_tag * Uchar.t list) option
   ; composition_exclusion : bool
   ; east_asian_width      : east_asian_width_category
+  ; grapheme_break        : grapheme_break_property
+  ; emoji_type            : emoji
   ; decimal_digit_value   : int option
   ; digit_value           : int option
   ; numeric_value         : (int64 * int) option
@@ -133,5 +157,19 @@ let combining_class_to_int = function
   | Double_below -> 233
   | Double_above -> 234
   | Below_iota_subscript -> 240
+
+
+let grapheme_break_to_string = function
+    | CR -> "CR"
+    | LF -> "LF"
+    | Control -> "Control"
+    | SpacingMark -> "SpaceMark"
+    | Extend   -> "Extend"
+    | ZWJ -> "ZWJ"
+    | Prepend -> "Prepend"
+    | ExtPict -> "ExtPict"
+    | RegionalIndicator -> "RI"
+    | L -> "L" | V -> "V" | T -> "T" | LV -> "LV" | LVT -> "LVT"
+    | Other         -> "Other"
 
 type prefix_tree = Node of (Uchar.t, Uchar.t option * prefix_tree) Hashtbl.t

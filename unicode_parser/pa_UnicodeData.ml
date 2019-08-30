@@ -41,9 +41,8 @@ let combining_class_of_int = function
   | 240 -> Below_iota_subscript
   | i -> Lex.give_up ~msg:(Printf.sprintf "Missing: %i\n%!" i) ()
 
-
 let bidirectional_mapping_of_string = function
-  | "L"   -> L
+  | "L"   -> (L:bidirectional_mapping)
   | "LRE" -> LRE
   | "LRO" -> LRO
   | "LRI" -> LRI
@@ -156,6 +155,55 @@ module EastAsianWidth = struct
   let parse = Grammar.parse_channel items blank
 end
 
+module GraphemeBreak = struct
+  let blank = Regexp.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\n]+\\)*"
+
+  let%parser range = (c1::code) ".." (c2::code) => (c1,c2)
+                   ; (c1::code)                 => (c1,c1)
+
+  let%parser category =
+      "CR"          => CR
+    ; "LF"          => LF
+    ; "Prepend"     => Prepend
+    ; "Control"     => Control
+    ; "Extend"      => Extend
+    ; "SpacingMark" => SpacingMark
+    ; "L"           => L
+    ; "V"           => V
+    ; "T"           => T
+    ; "LV"          => LV
+    ; "LVT"         => LVT
+    ; "ZWJ"         => ZWJ
+    ; "Regional_Indicator" => RegionalIndicator
+
+  let%parser item = (r::range) ';' (c::category) => (r,c)
+
+  let%parser items = Grammar.star item
+
+  let parse = Grammar.parse_channel items blank
+end
+
+module Emoji = struct
+  let blank = Regexp.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\n]+\\)*"
+
+  let%parser range = (c1::code) ".." (c2::code) => (c1,c2)
+                   ; (c1::code)                 => (c1,c1)
+
+  let%parser category =
+      "Emoji"                 => Emoji
+    ; "Emoji_Presentation"    => EmojiPresentation
+    ; "Emoji_Modifier"        => EmojiModifier
+    ; "Emoji_Modifier_Base"   => EmojiModifierBase
+    ; "Emoji_Component"       => EmojiComponent
+    ; "Extended_Pictographic" => ExtendedPictographic
+
+  let%parser item = (r::range) ';' (c::category) => (r,c)
+
+  let%parser items = Grammar.star item
+
+  let parse = Grammar.parse_channel items blank
+end
+
 let%parser integer =
   (c::RE"[-+]?[0-9]+") => int_of_string c
 
@@ -222,6 +270,8 @@ let%parser single =
         ; decomposition         = dec
         ; composition_exclusion = false (* needs all characters to compute *)
         ; east_asian_width      = Neutral (* set later *)
+        ; grapheme_break        = Other (* set later *)
+        ; emoji_type            = NotEmoji  (* set later *)
         ; decimal_digit_value   = decimal
         ; digit_value           = digit
         ; numeric_value         = numeric
@@ -278,8 +328,10 @@ let%parser range =
         ; combining_class       = c_cl
         ; bidirectional_mapping = bid_map
         ; decomposition         = get_dec dec
-        ; composition_exclusion = false
+        ; composition_exclusion = false (* set later *)
         ; east_asian_width      = Neutral (* set later *)
+        ; grapheme_break        = Other (* set later *)
+        ; emoji_type            = NotEmoji  (* set later *)
         ; decimal_digit_value   = decimal
         ; digit_value           = digit
         ; numeric_value         = numeric
@@ -359,17 +411,19 @@ let add_to_prefix_tree c =
 
 let _ =
   (* Command line args *)
-  if Array.length Sys.argv != 6 then
+  if Array.length Sys.argv != 8 then
     begin
       let pn = Sys.argv.(0) in
-      Printf.eprintf "Usage: %s <path_to_UnicodeData.txt> <path_to_NormalizationTest.txt> <path_to_CompositionExclusion.txt> <path_to_EastAsianWidth.txt> <output_file>" pn;
+      Printf.eprintf "Usage: %s <path_to_UnicodeData.txt> <path_to_NormalizationTest.txt> <path_to_CompositionExclusion.txt> <path_to_EastAsianWidth.txt> <path_GraphemeBreakProperty.txt> <path_to_emoji-data.txt> <output_file>" pn;
       exit 1
     end;
   let infile = Sys.argv.(1) in
   let infile2 = Sys.argv.(2) in
   let infile3 = Sys.argv.(3) in
   let infile4 = Sys.argv.(4) in
-  let outfile = Sys.argv.(5) in
+  let infile5 = Sys.argv.(5) in
+  let infile6 = Sys.argv.(6) in
+  let outfile = Sys.argv.(7) in
 
   (* Parsing and preparing the data *)
   let infile = open_in infile in
@@ -402,9 +456,61 @@ let _ =
   in
   close_in infile4;
 
+  let infile5 = open_in infile5 in
+  let l = Pos.handle_exception GraphemeBreak.parse infile5 in
+  let l = List.sort (fun ((x,_),_) ((y,_),_) -> compare x y) l in
+  let l =
+    let rec fn acc l =
+      match acc, l with
+      | ((x1,y1),c1)::acc, ((x2,y2),c2)::l when x2 = Uchar.succ y1 && c1 = c2
+        -> fn (((x1,y2),c1)::acc) l
+      | _, i::l -> fn (i::acc) l
+      | _, []   -> List.rev acc
+    in
+    fn [] l
+  in
+  let set_grapheme_break (i,d) =
+    let c =
+      try snd (List.find (fun ((x,y),_) -> x <= d.code && d.code <= y) l)
+      with Not_found -> Other
+    in
+    let c =
+      if (d.emoji_type = ExtendedPictographic ||
+           d.emoji_type = Emoji) && c = Other
+      then ExtPict
+      else c
+    in
+    (i, { d with grapheme_break = c })
+  in
+  close_in infile5;
+
+  let infile6 = open_in infile6 in
+  let l = Pos.handle_exception Emoji.parse infile6 in
+  let l = List.sort (fun ((x,_),_) ((y,_),_) -> compare x y) l in
+  let l =
+    let rec fn acc l =
+      match acc, l with
+      | ((x1,y1),c1)::acc, ((x2,y2),c2)::l when x2 = Uchar.succ y1 && c1 = c2
+        -> fn (((x1,y2),c1)::acc) l
+      | _, i::l -> fn (i::acc) l
+      | _, []   -> List.rev acc
+    in
+    fn [] l
+  in
+  let set_emoji_type (i,d) =
+    let c =
+      try snd (List.find (fun ((x,y),_) -> x <= d.code && d.code <= y) l)
+      with Not_found -> NotEmoji
+    in
+    (i, { d with emoji_type = c })
+  in
+  close_in infile5;
+
   let data = flatten_data ld in
   let data = List.map (set_composition_exclusion data) data in
   let data = List.map set_east_asian_width data in
+  let data = List.map set_emoji_type data in
+  let data = List.map set_grapheme_break data in
 
   (* Adding the data to the permanent map *)
   PermanentMap.new_map outfile; (* Fails if file exists *)
