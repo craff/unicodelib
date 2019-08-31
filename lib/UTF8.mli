@@ -19,6 +19,13 @@ val fold : ('a -> Uchar.t -> 'a) -> 'a -> string -> 'a
 (** map all utf8 chars in a string *)
 val map : (Uchar.t -> Uchar.t) -> string -> string
 
+(** utf8 length *)
+val length : string -> int
+
+(** [sub  s offset len] give  the substring of  [s] of length [len]  starting at
+   position [offset]. Raise Invalid_argument if the argument are out of bound *)
+val sub : string -> int -> int -> string
+
 (** [nth_index s n] gives the index of the [n]th uncode character in [s]. If [n]
 is  negative,  count from  the  end  ([nth_index s  (-1)]  is  the last  unicode
 character in [s] *)

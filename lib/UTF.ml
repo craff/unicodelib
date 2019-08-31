@@ -31,6 +31,8 @@ module type UTFString = sig
   val fold : ('a -> Uchar.t -> 'a) -> 'a -> string -> 'a
   val map : (Uchar.t -> Uchar.t) -> string -> string
   val nth_index : string -> int -> int
+  val length : string -> int
+  val sub : string -> int -> int -> string
   val nth : string -> int -> (Uchar.t * int)
   val next : string -> int -> int
   val prev : string -> int -> int
@@ -133,6 +135,20 @@ module Make = functor ( ED : EncDec ) ->
     let next : string -> int -> int = fun s i ->
       let (_, sz) = decode s i in
       i + sz
+
+    let sub s start len =
+      let slen = String.length s in
+      let rec find pos num =
+        if num < 0 then invalid_arg "Utf8.sub (negative index)";
+        if num = 0 then pos else
+          begin
+            if pos >= slen then invalid_arg "Utf8.sub (char out of bound)";
+            find (next s pos) (num-1)
+          end
+      in
+      let start = find 0 start in
+      let len   = (find start len) - start in
+      String.sub s start len
 
     (*
      * Test whether an index is out of range (i.e. if it points out of the
