@@ -13,7 +13,7 @@ let%parser range = (c1::code) ".." (c2::code) => (c1,c2)
 let camlify =
   String.map (function ' ' -> '_' | '-' -> '_' | c -> c)
 
-let%parser name = Grammar.layout Lex.noblank
+let%parser name = Grammar.layout Blank.none
   ((s::RE"[-0-9A-Za-z ]+") (RE"\n")  => camlify s)
 
 let%parser item = (r::range) ';' (name::name) => (r,name)
