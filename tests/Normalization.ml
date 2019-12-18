@@ -17,7 +17,7 @@ let print ch s =
   let l = UTF8.to_list s in
   List.iter (fun x -> Printf.fprintf ch "%04x " (Uchar.to_int x)) l
 
-let test pos x nfc nfd nfkc nfkd =
+let test (lazy pos) x nfc nfd nfkc nfkd =
   let cmp name s1 s2 =
     if s1 <> s2 then
       begin
