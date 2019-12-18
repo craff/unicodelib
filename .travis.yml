@@ -34,7 +34,7 @@ before_install:
   - opam pin add -k path pacomb.1.0 pacomb
 
 install:
-  - dune
+  - dune build
   - dune install
 
 script:
