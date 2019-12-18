@@ -57,16 +57,18 @@ module UTF8String = UTF.Make(
         (Uchar.of_int cc, 1)
       else if (cc lsr 6) land 1 = 0 then
         raise (invalid_arg "UTF8.decode")
-      else if (cc lsr 5) land 1 = 0 then
+      else
+        let len = String.length s in
+        if (cc lsr 5) land 1 = 0 && i + 1 < len then
         let i0 = (cc land 0b00011111) lsl 6 in
         let i1 = (Char.code s.[i+1]) land 0b00111111 in
         (Uchar.of_int (i0 lor i1), 2)
-      else if (cc lsr 4) land 1 = 0 then
+      else if (cc lsr 4) land 1 = 0 && i + 2 < len  then
         let i0 = (cc land 0b00001111) lsl 12 in
         let i1 = ((Char.code s.[i+1]) land 0b00111111) lsl 6 in
         let i2 = (Char.code s.[i+2])  land 0b00111111 in
         (Uchar.of_int (i0 lor i1 lor i2), 3)
-      else if (cc lsr 3) land 1 = 0 then
+      else if (cc lsr 3) land 1 = 0  && i + 3 < len then
         let i0 = (cc land 0b00000111) lsl 18 in
         let i1 = ((Char.code s.[i+1]) land 0b00111111) lsl 12 in
         let i2 = ((Char.code s.[i+2]) land 0b00111111) lsl 6 in

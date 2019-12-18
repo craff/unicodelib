@@ -171,17 +171,14 @@ module Make = functor ( ED : EncDec ) ->
      * not a valid unicode string.
      *)
     let prev : string -> int -> int = fun s i ->
-      let ps = List.filter (fun i -> i >= 0) [i-1; i-2; i-3; i-4] in
-      let rec try_until_found l =
-        match l with
-        | []    -> assert false
-        | p::ps -> try
-                     let (_, sz) = decode s p in
-                     if p + sz <> i then assert false;
-                     p
-                   with
-                     Invalid_argument _ -> try_until_found ps
-      in try_until_found ps
+      let rec try_until_found n =
+        if n > 4 then invalid_arg "Utf8.prev" else
+          (try
+             let p = i - n in
+             let (_, sz) = decode s p in
+             if (p + sz) <> i then try_until_found (n+1) else p
+           with Invalid_argument _ -> try_until_found (n+1)) in
+      try_until_found 1
 
     (*
      * Compute the index of the n-th unicode character ecoded in a string if
