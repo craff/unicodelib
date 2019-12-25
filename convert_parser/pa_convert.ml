@@ -22,6 +22,11 @@ let%parser mappings =
 
 let parse = parse_channel mappings blank
 
+let int n = Exp.constant (Const.int n)
+let id n = Exp.ident (mknoloc (Lident n))
+let mid m n = Exp.ident (mknoloc (Ldot(Lident m,n)))
+let pid n = Pat.var (mknoloc n)
+
 let _ =
   (* Command line args *)
   if Array.length Sys.argv != 3 then
@@ -39,10 +44,6 @@ let _ =
 
   close_in infile;
 
-  let int n = Exp.constant (Const.int n) in
-  let id n = Exp.ident (mknoloc (Lident n)) in
-  let mid m n = Exp.ident (mknoloc (Ldot(Lident m,n))) in
-  let pid n = Pat.var (mknoloc n) in
   let seq = ref (id "a") in
   List.iter (fun (i,j) ->
       seq :=

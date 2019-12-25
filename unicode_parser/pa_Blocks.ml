@@ -24,6 +24,11 @@ let%parser items = Grammar.star item
 
 let parse = Grammar.parse_channel items blank
 
+let int n = Exp.constant (Const.int n)
+let id n = Exp.ident (mknoloc (Lident n))
+let mid m n = Exp.ident (mknoloc (Ldot(Lident m,n)))
+let pid n = Pat.var (mknoloc n)
+
 let _ =
   (* Command line args *)
   if Array.length Sys.argv != 3 then
@@ -79,13 +84,13 @@ let _ =
   let str_items =
     [ td
     ; Str.value Nonrecursive
-        [Vb.mk (Pat.var (mknoloc "block"))
-           (Exp.fun_ Nolabel None (Pat.var (mknoloc "c"))
+        [Vb.mk (pid "block")
+           (Exp.fun_ Nolabel None (pid "c")
               (Exp.let_ Nonrecursive
-                 [Vb.mk (Pat.var (mknoloc "n"))
+                 [Vb.mk (pid "n")
                     (Exp.apply
-                       (Exp.ident (mknoloc (Ldot(Lident "Uchar", "to_int"))))
-                       [Nolabel, Exp.ident (mknoloc (Lident "c"))])]
+                       (mid "Uchar" "to_int")
+                       [Nolabel,  id"c"])]
                  (expr blocks)))]
     ]
   in
