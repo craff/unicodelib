@@ -3,5 +3,5 @@
   (name pa_convert)
   (public_name pa_convert)
   (modules :standard)
-  (preprocess (pps ppxlib.metaquot pacomb.ppx))
+  (preprocess (pps pacomb.ppx))
   (libraries unix ppxlib pacomb))

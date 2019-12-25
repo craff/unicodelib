@@ -1,8 +1,10 @@
+let mkloc = Location.mkloc
+let mknoloc = Location.mknoloc
 open Pacomb
 open Grammar
 open Asttypes
-open Parsetree
 open Ast_helper
+open Longident
 
 (* Blank function *)
 let blank = Regexp.blank_regexp "\\(\\(#[^\n]*\\)\\|[ \r\t\026]+\\)*"
@@ -37,34 +39,39 @@ let _ =
 
   close_in infile;
 
-  let loc = Location.none in
-  let seq = ref [%expr arr] in
   let int n = Exp.constant (Const.int n) in
+  let id n = Exp.ident (mknoloc (Lident n)) in
+  let mid m n = Exp.ident (mknoloc (Ldot(Lident m,n))) in
+  let pid n = Pat.var (mknoloc n) in
+  let seq = ref (id "a") in
   List.iter (fun (i,j) ->
-      seq := [%expr arr.([%e int i]) <- [%e int j]; [%e !seq]]) ld;
-  let str_items = [%str
-                let conversion_array : int array =
-                  let arr = Array.make 255 (-1) in
-                  [%e !seq]
+      seq :=
+        Exp.sequence
+          (Exp.apply (mid "Array" "set")
+             [ Nolabel, id "a"
+             ; Nolabel, int i
+             ; Nolabel, int j ])
+          !seq) ld;
+  let str_items =
+    [Str.value Nonrecursive
+       [Vb.mk (pid "conversion_array")
+          (Exp.let_ Nonrecursive
+             [Vb.mk (pid "a")
+                (Exp.apply (mid "Array" "make")
+                   [ Nolabel, int 255
+                   ; Nolabel, int (-1)])]
+             !seq)]
+    ;Str.include_
+       { pincl_mod =
+           (Mod.apply
+              (Mod.ident (mknoloc (Ldot(Lident "GenConvert","Make"))))
+              (Mod.structure
+                 [Str.value Nonrecursive
+                    [Vb.mk (pid "conversion_array")
+                       (id "conversion_array")]]))
+       ; pincl_loc = Location.none
+       ; pincl_attributes = [] }
 
-                exception Undefined
-                let to_uchar : char -> Uchar.t =
-                  fun c ->
-                  let i = Char.code c in
-                  if (i < 0) || (i > 255) then raise Undefined;
-                  let u = conversion_array.(i) in
-                   if u < 0 then raise Undefined; Uchar.of_int u
-
-                let to_utf8 : string -> string =
-                  fun s -> UTF8.init (String.length s)
-                             (fun i -> to_uchar (s.[i - 1]))
-
-                let to_utf16 : string -> string =
-                  fun s -> UTF16.init (String.length s)
-                             (fun i -> to_uchar (s.[i - 1]))
-
-                let to_utf32 : string -> string =
-                  fun s -> UTF32.init (String.length s)
-                             (fun i -> to_uchar (s.[i - 1]))]
+    ]
   in
   Pparse.(write_ast Structure outfile str_items)

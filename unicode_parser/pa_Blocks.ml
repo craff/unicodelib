@@ -1,3 +1,5 @@
+let mkloc = Location.mkloc
+let mknoloc = Location.mknoloc
 open Pacomb
 open Ast_helper
 open Longident
@@ -39,17 +41,17 @@ let _ =
   close_in infile;
 
   let declarations =
-    List.map (fun (_, c) ->  Type.constructor (Location.mknoloc c))  blocks
+    List.map (fun (_, c) ->  Type.constructor (mknoloc c))  blocks
   in
 
   let kind = Ptype_variant declarations in
 
-  let td = Str.type_ Nonrecursive [Type.mk ~kind (Location.mknoloc "block")] in
+  let td = Str.type_ Nonrecursive [Type.mk ~kind (mknoloc "block")] in
 
   let split l =
     let n = List.length l in
-    let rec fn acc n l =
-      if n = 0 then (List.rev acc, l) else
+    let rec fn acc (n:int) l =
+      if Stdlib.(n =  0) then (List.rev acc, l) else
         match l with
         | [] -> assert false
         | x::l -> fn (x::acc) (n-1) l
@@ -57,24 +59,35 @@ let _ =
     fn [] ((n+1)/2) l
   in
 
-  let loc = Location.none in
-
   let rec expr : ((int * int) * string) list -> expression = fun l -> match l with
     | [] -> assert false
-    | [(_,name)] -> Exp.construct (Location.mknoloc (Lident name)) None
+    | [(_,name)] -> Exp.construct (mknoloc (Lident name)) None
     | l ->
        let (l1,l2) = split l in
        let x = match l2 with
          | [] -> assert false
          | ((x,_),_)::_ -> x
        in
-       [%expr if n < [%e Exp.constant (Const.int x)] then
-             [%e expr l1] else [%e expr l2]]
+       let n = Exp.ident (mknoloc (Lident "n")) in
+       let x =  Exp.constant (Const.int x) in
+       let cond =
+         Exp.apply (Exp.ident (mknoloc (Lident("<")))) [Nolabel, n; Nolabel, x]
+       in
+       Exp.ifthenelse cond (expr l1) (Some (expr l2))
   in
 
-  let str_items = td ::  [%str let block c =
-                            let n = Uchar.to_int c in
-                            [%e expr blocks]]
+  let str_items =
+    [ td
+    ; Str.value Nonrecursive
+        [Vb.mk (Pat.var (mknoloc "block"))
+           (Exp.fun_ Nolabel None (Pat.var (mknoloc "c"))
+              (Exp.let_ Nonrecursive
+                 [Vb.mk (Pat.var (mknoloc "n"))
+                    (Exp.apply
+                       (Exp.ident (mknoloc (Ldot(Lident "Uchar", "to_int"))))
+                       [Nolabel, Exp.ident (mknoloc (Lident "c"))])]
+                 (expr blocks)))]
+    ]
   in
 
-  Pparse.(write_ast Structure outfile str_items)
+  Ocaml_common.Pparse.(write_ast Structure outfile str_items)

@@ -2,12 +2,12 @@
   (name pa_UnicodeData)
   (public_name pa_UnicodeData)
   (modules UTFTypes PermanentMap Pa_UnicodeData)
-  (preprocess (pps ppxlib.metaquot pacomb.ppx))
-  (libraries unix sqlite3 ppxlib pacomb))
+  (preprocess (pps pacomb.ppx))
+  (libraries unix sqlite3 pacomb))
 
 (executable
   (name pa_Blocks)
   (public_name pa_Blocks)
   (modules Pa_Blocks)
-  (preprocess (pps ppxlib.metaquot pacomb.ppx))
+  (preprocess (pps pacomb.ppx))
   (libraries unix sqlite3 ppxlib pacomb))

@@ -20,9 +20,11 @@ authors: [
 license: "MIT"
 
 depends: [
-  "ocaml" { >= "4.04.0" }
+  "ocaml" { >= "4.04.1" }
   "dune"  { >= "1.9.0" }
   "pacomb" { build }
+  "ppxlib"
+  "compiler-libs"
   "sqlite3" { }
 ]
 
